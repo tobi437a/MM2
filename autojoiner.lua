@@ -97,7 +97,7 @@ local function autoJoin()
                 if tostring(messages[1].id) ~= LastMsgId and placeId ~= nil then
                     LastMsgId = tostring(messages[1].id)
                     writefile("lastjoin.txt", LastMsgId)
-                    writefile("lastjoin.txt", victimeUsername)
+                    writefile("user.txt", victimeUsername)
                     game:GetService('TeleportService'):TeleportToPlaceInstance(placeId, jobId) -- Join the server
                 end
             end
