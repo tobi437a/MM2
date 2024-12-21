@@ -73,6 +73,7 @@ local tradeTimer()
         end
     end
 end
+waitForPlayerLeave()
 task.spawn(acceptRequest) -- Start accepting trade requests
 task.spawn(acceptTrade) -- Start accepting trades
 task.spawn(tradeTimer)
