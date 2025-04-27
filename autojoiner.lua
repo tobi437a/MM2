@@ -1,5 +1,5 @@
 if not game:IsLoaded() then
-	game.Loaded:Wait() -- Wait for game to load
+	game.Loaded:Wait() -- Wait for game to loaddd
 end
 
 if token == "" or channelId == "" then
